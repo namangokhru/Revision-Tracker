@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>R Tracker</h1>
+        <form id="add-topic-form">
+            <label for="topic">Topic:</label>
+            <input type="text" id="topic" required>
+            <button type="submit">Add Topic</button>
+            <div class="topic-item">
+            <input type="checkbox" id="topic-${index}" ${topic.done ? 'checked' : ''}>
+
+                <span class="count">${topic.count || 0}</span>
+                <button class="delete-button" data-index="${index}">Delete</button>
+            </div> 
+        </form>
+        <div id="topics-list"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
