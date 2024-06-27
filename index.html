@@ -13,12 +13,6 @@
             <label for="topic">Topic:</label>
             <input type="text" id="topic" required>
             <button type="submit">Add Topic</button>
-            <div class="topic-item">
-            <input type="checkbox" id="topic-${index}" ${topic.done ? 'checked' : ''}>
-
-                <span class="count">${topic.count || 0}</span>
-                <button class="delete-button" data-index="${index}">Delete</button>
-            </div> 
         </form>
         <div id="topics-list"></div>
     </div>
