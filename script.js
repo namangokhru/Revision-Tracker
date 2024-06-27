@@ -1,94 +1,87 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
-    padding: 20px;
-}
+document.addEventListener('DOMContentLoaded', function() {
+    const topicsList = document.getElementById('topics-list');
+    const addTopicForm = document.getElementById('add-topic-form');
+    const topicInput = document.getElementById('topic');
 
-.container {
-    max-width: 600px;
-    margin: 0 auto;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
+    // Load topics from local storage on page load
+    let topics = JSON.parse(localStorage.getItem('topics')) || [];
 
-h1 {
-    text-align: center;
-    color: #333;
-}
+    // Function to render topics in the UI
+    function renderTopics() {
+        topicsList.innerHTML = '';
+        topics.forEach((topic, index) => {
+            const topicItem = document.createElement('div');
+            topicItem.classList.add('topic-item');
+            if (topic.done) {
+                topicItem.classList.add('completed');
+            }
+            topicItem.innerHTML = `
+                <input type="checkbox" id="topic-${index}" ${topic.done ? 'checked' : ''}>
+                <label for="topic-${index}">${topic.name}</label>
+                <span class="count">${topic.count || 0}</span>
+                <button class="delete-button" data-index="${index}">Delete</button>
+            `;
 
-form {
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+            // Update count and checkbox status when checkbox is toggled
+            const checkbox = topicItem.querySelector('input[type="checkbox"]');
+            checkbox.addEventListener('change', function() {
+                topic.done = this.checked;
+                topic.count = 0; // Reset count
+                topic.checkedDate = new Date().toISOString(); // Update checked date
+                localStorage.setItem('topics', JSON.stringify(topics));
+                renderTopics();
+            });
 
-label {
-    font-weight: bold;
-}
+            // Delete topic when delete button is clicked
+            const deleteButton = topicItem.querySelector('.delete-button');
+            deleteButton.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent form submission on button click
+                topics.splice(index, 1); // Remove the topic from the array
+                localStorage.setItem('topics', JSON.stringify(topics));
+                renderTopics();
+            });
 
-input[type="text"] {
-    flex: 1;
-    margin-right: 10px;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
+            topicsList.appendChild(topicItem);
+        });
+    }
 
-button {
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    border-radius: 4px;
-}
+    // Function to update count for each topic
+    function updateCounts() {
+        const today = new Date();
+        topics.forEach(topic => {
+            if (topic.checkedDate) {
+                const lastCheckedDate = new Date(topic.checkedDate);
+                const diffTime = Math.abs(today - lastCheckedDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                topic.count = diffDays;
+            }
+        });
+        localStorage.setItem('topics', JSON.stringify(topics));
+        renderTopics();
+    }
 
-button:hover {
-    background-color: #0056b3;
-}
+    // Add topic form submit event
+    addTopicForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const topicName = topicInput.value.trim();
+        if (topicName) {
+            const newTopic = {
+                name: topicName,
+                done: false,
+                count: 0,
+                checkedDate: null
+            };
+            topics.push(newTopic);
+            localStorage.setItem('topics', JSON.stringify(topics));
+            topicInput.value = '';
+            renderTopics();
+        }
+    });
 
-.topic-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
+    // Initialize and render topics on page load
+    renderTopics();
 
-.topic-item.completed {
-    background-color: #d4edda;
-    border-color: #c3e6cb;
-}
-
-.topic-item label {
-    margin-left: 10px;
-}
-
-.topic-item.completed label {
-    text-decoration: line-through;
-    color: #28a745;
-}
-
-span.count {
-    font-weight: bold;
-    color: #ff6347;
-}
-
-.delete-button {
-    background-color: #dc3545;
-    color: #fff;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-    border-radius: 4px;
-}
-
-.delete-button:hover {
-    background-color: #c82333;
-}
+    // Update counts every day
+    setInterval(updateCounts, 24 * 60 * 60 * 1000); // Update counts daily
+    updateCounts(); // Initial count update on page load
+});
